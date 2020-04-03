@@ -1,0 +1,16 @@
+import com.google.gson.{JsonObject, JsonParser}  //使用Gson包
+object JsonTest2 {
+
+  def main(args: Array[String]): Unit = {
+
+//    gson("{\"host\":\"td_test\",\"ts\":1486979192345,\"device\":{\"tid\":\"a123456\",\"os\":\"android\",\"sdk\":\"1.0.3\"},\"time\":1501469230058}")
+    gson("{'host':'192.168.1.1','ts':1486979192345,'port':5858,'device':{'tid':'a123','os':'android'}}")
+
+  }
+
+  def gson(str: String) ={
+    val json = new JsonParser()
+    val obj = json.parse(str).asInstanceOf[JsonObject]
+    println(obj.get("device"))
+    println(obj.get("ts"))
+  }

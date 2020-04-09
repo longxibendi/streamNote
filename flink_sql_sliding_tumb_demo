@@ -1,0 +1,37 @@
+
+
+{"database1":"hive","table1":"CDS","type":"insert","ts":"2020-04-09T13:16:11Z"}
+
+
+CREATE TABLE flink (
+    `database1` STRING,
+    `table1` STRING,
+    `type` STRING,
+    `ts` TIMESTAMP(3),
+    proctime as PROCTIME(),   -- 通过计算列产生一个处理时间列
+    WATERMARK FOR ts as ts - INTERVAL '5' SECOND  -- 在ts上定义watermark，ts成为事件时间列
+) WITH (
+    'connector.type' = 'kafka',  -- 使用 kafka connector
+    'connector.version' = 'universal',  -- kafka 版本，universal 支持 0.11 以上的版本
+    'connector.topic' = 'flink',  -- kafka topic
+    'connector.startup-mode' = 'latest-offset',  -- 从起始 offset 开始读取
+    'connector.properties.zookeeper.connect' = 'localhost:2181',  -- zookeeper 地址
+    'connector.properties.bootstrap.servers' = 'hadoop02:9092',  -- kafka broker 地址
+    'format.type' = 'json'  -- 数据源格式为 json
+);
+
+select hour(tumble_start(ts,interval '1' hour)),count(*) 
+from flink
+where database1 = 'spark'
+group by tumble(ts,interval '1' hour);
+
+select minute(tumble_start(ts,interval '1' minute)) as ttt ,count(*) as spark_co
+from flink
+where database1 = 'spark'
+group by tumble(ts,interval '1' minute);
+
+
+select hop_start(ts,interval '3' second,interval '10' second  ) as ttt ,count(*) as spark_co
+from flink
+where database1 = 'spark'
+group by HOP(ts,interval '3' second,interval '10' second);
